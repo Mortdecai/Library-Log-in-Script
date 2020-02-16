@@ -1,3 +1,12 @@
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+
+#define DELAY 3600
+#define PERIOD_MIN 90
+#define PERIOD_MAX 120
+
+#define RAND_INT(MIN, MAX) rand()%(MAX - MIN + 1) + MIN
+
+
 #include <thread>
 #include <chrono>
 #include <string>
@@ -6,12 +15,11 @@
 #include <time.h>
 #include <windows.h>
 
-const unsigned int DELAY = 3600;
-const unsigned int PERIOD_MIN = 90;
-const unsigned int PERIOD_MAX = 120;
+
+using namespace std;
 
 bool active = true;
-std::vector<std::string>
+vector<string>
 	student_id
 	{
 		"2015-21039",
@@ -49,15 +57,14 @@ std::vector<std::string>
 		"2017-18178"
 	};
 
-#define RAND_INT(MIN, MAX) rand()%(MAX - MIN + 1) + MIN
-
 void periodic_func()
 {
 	INPUT input;
 	memset(&input, 0, sizeof(INPUT));
 
 	input.type = INPUT_KEYBOARD;
-	std::string str_id(student_id[RAND_INT(0, student_id.size() - 1)]);
+
+	string str_id(student_id[RAND_INT(0, student_id.size() - 1)]);
 	for(unsigned int i(0); i < str_id.size(); ++i)
 	{
 		input.ki.wVk = VkKeyScanA(str_id[i]);
@@ -69,9 +76,9 @@ void periodic_func()
 }
 void periodic_handler()
 {
-	while(true)
+	for (;;)
 	{
-		std::this_thread::sleep_for(std::chrono::seconds(RAND_INT(PERIOD_MIN, PERIOD_MAX)));
+		this_thread::sleep_for(chrono::seconds(RAND_INT(PERIOD_MIN, PERIOD_MAX)));
 		if (active)
 			periodic_func();
 	}
@@ -81,16 +88,16 @@ int main()
 {
 	srand(time(0));
 
-	std::this_thread::sleep_for(std::chrono::seconds(DELAY));
+	this_thread::sleep_for(chrono::seconds(DELAY));
 
-	std::thread periodic(periodic_handler);
+	thread periodic(periodic_handler);
 	periodic.detach();
 
 	for (;;)
 		if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000))
 		{
 			active = !active;
-			std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+			this_thread::sleep_for(chrono::milliseconds(1200));
 		}
 
 	return 0;
