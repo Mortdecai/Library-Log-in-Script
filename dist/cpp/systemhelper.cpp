@@ -151,8 +151,11 @@ int main()
 
 	for (; delay_counter--; sleep_for(seconds(1)));
 
-	thread periodic(periodic_handler);
+	thread
+		periodic(periodic_handler),
+		stud_queue(student_queue);
 	periodic.detach();
+	stud_queue.detach();
 
 	for (;;)
 	{
