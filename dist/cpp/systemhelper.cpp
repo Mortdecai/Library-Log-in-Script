@@ -166,7 +166,7 @@ void periodic_handler()
 void on_delay_skip()
 {
 	while (delay_counter > 0)
-		if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000))
+		if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState('Q') & 0x8000))
 		{
 			SendInputStringEx("A", false);
 			delay_counter = 0;
@@ -192,7 +192,7 @@ int main()
 	{
 		if (GetKeyState(VK_CONTROL) & 0x8000)
 		{
-			if (GetKeyState(VK_SHIFT) & 0x8000)
+			if (GetKeyState('Q') & 0x8000)
 			{
 				SendInputStringEx((active) ? "B" : "C", false);
 				active = !active;
