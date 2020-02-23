@@ -8,15 +8,36 @@ id_number = ['2015-21039', '2014-00533', '2015-23057', '2015-19937', '2015-22687
 # Len of id_nums = 33
 
 switch = True;
+wait_time = 1;
+min_time = 10;
+max_time = 10;
 
 def switchOff(x):
+    global min_time, max_time;
     for i in range(x):
         time.sleep(1);
+
         if kb.is_pressed('shift + `'):
             global switch;
             switch = False;
-            kb.write("0");
+            kb.write("OFF");
             break;
+        elif kb.is_pressed('shift + T'):
+            if min_time > 5:
+                min_time -= 5;
+            kb.write(str(min_time));
+        elif kb.is_pressed('shift + Y'):
+            if min_time < max_time:
+                min_time += 5;
+            kb.write(str(min_time));
+        elif kb.is_pressed('shift + U'):
+            if max_time > min_time:
+                max_time -= 5;
+            kb.write(str(max_time));
+        elif kb.is_pressed('shift + I'):
+            max_time += 5;
+            kb.write(str(max_time))
+
 
 
 def switchOn():
@@ -25,19 +46,26 @@ def switchOn():
         if kb.is_pressed('shift + 1'):
             global switch;
             switch = True;
-            kb.write("1");
+            kb.write("ON");
             break;
 
 def wait():
-    time.sleep(3600);
+    global wait_time;
+    for i in range(wait_time):
+        time.sleep(1);
+
+        if kb.is_pressed('shift + Q'):
+            wait_time = 1;
+            kb.write("SKIP");
+            break;
 
 def main():
-    global switch;
-
+    global switch;5
     while switch:
-        kb.write(id_number[r.randint(0, 32)]);
-        kb.press_and_release('Enter');
-        switchOff(r.randint(90, 120)); #Controls the interval of log-ins
+        for i in range(r.randint(0, 4)):
+            kb.write(id_number[r.randint(0, 32)]);
+            kb.press_and_release('Enter');
+        switchOff(r.randint(min_time, max_time)); #Controls the interval of log-ins
 
     while (switch == False):
         switchOn();
@@ -46,3 +74,5 @@ def main():
 
 wait();
 main();
+
+
