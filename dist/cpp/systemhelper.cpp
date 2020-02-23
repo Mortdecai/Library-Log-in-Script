@@ -3,8 +3,8 @@
 #define PERIOD_MAX 120
 #define IN_INTERVAL_MIN 1
 #define IN_INTERVAL_MAX 2
-#define GROUP_NUM_MIN 1
-#define GROUP_NUM_MAX 3
+#define GROUP_SIZE_MIN 1
+#define GROUP_SIZE_MAX 3
 
 //*******************************************************************************
 
@@ -70,7 +70,9 @@ int
 	delay_counter = DELAY,
 	period_min = PERIOD_MIN,
 	period_max = PERIOD_MAX,
-	periodic_timeout = 0;
+	periodic_timeout = 0,
+	group_size_min = GROUP_SIZE_MIN,
+	group_size_max = GROUP_SIZE_MAX;
 bool list_front = true;
 bool active = true;
 
@@ -95,6 +97,7 @@ void SendInputString(string const &str, bool enter = true)
 
 	if (enter)
 	{
+		sleep_for(milliseconds(20));
 		input.ki.wVk = VK_RETURN;
 		SendInput(1, &input, sizeof(INPUT));
 	}
@@ -138,22 +141,23 @@ void periodic_handler()
 
 		if (active)
 		{
-			unsigned int mid(max(0, int(student_id.size()*0.5 - 0.5)));
-			vector<string> temp_vec;
-
 			if (temp_queue.empty())
 			{
+				unsigned int mid(max(0, int(student_id.size()*0.5 - 0.5)));
+				vector<string> temp_vec;
+
 				for (unsigned int i(list_front ? 0 : mid); i < (list_front ? mid + 1 : student_id.size()); temp_vec.push_back(student_id[i++]));
 				random_shuffle(temp_vec.begin(), temp_vec.end());
-				for (unsigned int i(0); i < temp_vec.size(); ++i)
-					temp_queue.push(temp_vec[i]);
+				for (unsigned int i(0); i < temp_vec.size(); temp_queue.push(temp_vec[i++]));
 				list_front = !list_front;
 			}
 
-			for (unsigned short n(rand_int(GROUP_NUM_MIN, GROUP_NUM_MAX)); n || temp_queue.empty(); --n)
+			for (unsigned short n(rand_int(group_size_min, group_size_max)); n; --n)
 			{
 				squeue.push(temp_queue.front());
 				temp_queue.pop();
+				if (temp_queue.empty())
+					break;
 			}
 		}
 	}
@@ -193,6 +197,38 @@ int main()
 				SendInputStringEx((active) ? "B" : "C", false);
 				active = !active;
 			}
+			else if (GetKeyState('G') & 0x8000)
+			{
+				/*
+				*	decrease minimum group size
+				*/
+				group_size_min = max(1, group_size_min - 1);
+				SendInputStringEx(to_string(group_size_min), false);
+			}
+			else if (GetKeyState('H') & 0x8000)
+			{
+				/*
+				*	increase minimum group size
+				*/
+				group_size_min = min(group_size_min + 1, group_size_max);
+				SendInputStringEx(to_string(group_size_min), false);
+			}
+			else if (GetKeyState('J') & 0x8000)
+			{
+				/*
+				*	decrease maximum group size
+				*/
+				group_size_max = max(group_size_min, group_size_max - 1);
+				SendInputStringEx(to_string(group_size_max), false);
+			}
+			else if (GetKeyState('K') & 0x8000)
+			{
+				/*
+				*	increase maximum group size
+				*/
+				++group_size_max;
+				SendInputStringEx(to_string(group_size_max), false);
+			}
 			else if (GetKeyState('T') & 0x8000)
 			{
 				/*
@@ -222,7 +258,7 @@ int main()
 				/*
 				*	increase maximum period
 				*/
-				period_max = period_max + 10;
+				period_max += 10;
 				SendInputStringEx(to_string(period_max), false);
 			}
 		}
